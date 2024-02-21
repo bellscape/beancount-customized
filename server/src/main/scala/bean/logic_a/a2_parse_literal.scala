@@ -16,24 +16,27 @@ object a2_parse_literal {
 	case class CloseLiteral(date: LocalDate, account: String) extends Literal
 	case class SimpleTrxLiteral(date: LocalDate, from_account: String, to_account: String,
 								amount: Amount, narration: String) extends Literal
-	case class ComplexTrxLiteral(date: LocalDate, narration: String, postings: ArrayBuffer[PostingLiteral] = ArrayBuffer.empty) extends Literal
+	case class ComplexTrxLiteral(date: LocalDate, narration: String,
+								 postings: ArrayBuffer[PostingLiteral] = ArrayBuffer.empty,
+								 from_i: Int, var to_i: Int) extends Literal
 	case class PostingLiteral(account: String, delta: Option[Amount], has_price: Boolean, price: Option[Amount])
 
 
 	def parse(lines: Array[String]): Either[Seq[LiteralErr], Seq[Literal]] = {
 		val out = ArrayBuffer.empty[Literal]
 		val errs = ArrayBuffer.empty[LiteralErr]
-		for ((line, i) <- lines.zipWithIndex) {
-			parse_line(line) match {
+		for ((line, line_i) <- lines.zipWithIndex) {
+			parse_line(line, line_i) match {
 				case EmptyLine =>
 				case IllegalLine =>
-					errs += LiteralErr(i, i, "本行格式不对")
+					errs += LiteralErr(line_i, line_i, "本行格式不对")
 				case p: PostingLiteral =>
 					out.lastOption match {
 						case Some(t: ComplexTrxLiteral) =>
 							t.postings += p
+							t.to_i = line_i
 						case _ =>
-							errs += LiteralErr(i, i, "过账应紧随交易")
+							errs += LiteralErr(line_i, line_i, "过账应紧随交易")
 					}
 				case l: Literal =>
 					out += l
@@ -47,7 +50,7 @@ object a2_parse_literal {
 	private object IllegalLine
 	private type LineResult = EmptyLine.type | IllegalLine.type | Literal | PostingLiteral
 
-	private def parse_line(line: String): LineResult = {
+	private def parse_line(line: String, line_i: Int): LineResult = {
 		trim_comments(line) match {
 			// 此处 match 顺序考虑性能
 
@@ -67,7 +70,8 @@ object a2_parse_literal {
 
 			case TRX_HEADER_LINE(date, _, narration) =>
 				ComplexTrxLiteral(LocalDate.parse(date),
-					trimToEmpty(narration))
+					trimToEmpty(narration),
+					from_i = line_i, to_i = line_i)
 
 			case POSTING_LINE__NO_AMOUNT(account) =>
 				PostingLiteral(account, delta = None,
