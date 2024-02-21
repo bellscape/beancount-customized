@@ -7,7 +7,9 @@ import scala.util.Using
 
 object a1_read_file {
 
+
 	case class A1_File(name: String, file: File)
+
 
 	def list(root: String): Seq[A1_File] = {
 		val file = new File(root)
@@ -26,6 +28,7 @@ object a1_read_file {
 			}
 		}
 	}
+
 
 	def read_file(file: File): Array[String] = {
 		Using(Source.fromFile(file)) {_.getLines().toArray}.get
