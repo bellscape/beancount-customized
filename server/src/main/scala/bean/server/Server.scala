@@ -51,7 +51,7 @@ object Server {
 
 	private def init_schedule(): Unit = {
 		executor.scheduleWithFixedDelay(() => {BeanController.check_data()},
-			10, 10, TimeUnit.SECONDS)
+			2, 2, TimeUnit.SECONDS)
 	}
 	private val executor = Executors.newSingleThreadScheduledExecutor()
 

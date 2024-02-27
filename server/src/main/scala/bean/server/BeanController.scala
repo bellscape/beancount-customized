@@ -4,13 +4,14 @@ import io.javalin.websocket.WsContext
 
 import scala.collection.mutable.ArrayBuffer
 
-class BeanConnection(ctx: WsContext) {
+class BeanConnection(val ctx: WsContext) {
 
 	def init(): Unit = {
 		ctx.send("{init data}")
 	}
 
 	def handle_msg(msg: String): Unit = {
+		ctx.send(s"{handle: $msg}")
 	}
 
 }
@@ -24,7 +25,6 @@ object BeanController {
 	}
 
 	def check_data(): Unit = {
-
 	}
 
 }
