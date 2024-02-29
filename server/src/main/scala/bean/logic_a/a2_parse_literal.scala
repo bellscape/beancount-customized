@@ -10,7 +10,7 @@ import scala.collection.mutable.ArrayBuffer
 object a2_parse_literal {
 
 
-	trait Literal
+	trait Literal extends _ParseLineResult
 
 	case class BalanceLiteral(date: LocalDate, account: String, amount: Amount) extends Literal
 	case class CloseLiteral(date: LocalDate, account: String) extends Literal
@@ -19,7 +19,7 @@ object a2_parse_literal {
 	case class ComplexTrxLiteral(date: LocalDate, narration: String,
 								 postings: ArrayBuffer[PostingLiteral] = ArrayBuffer.empty,
 								 from_i: Int, var to_i: Int) extends Literal
-	case class PostingLiteral(account: String, delta: Option[Amount], has_price: Boolean, price: Option[Amount])
+	case class PostingLiteral(account: String, delta: Option[Amount], has_price: Boolean, price: Option[Amount]) extends _ParseLineResult
 
 
 	def parse(lines: Array[String]): Either[Seq[LiteralErr], Seq[Literal]] = {
@@ -46,11 +46,11 @@ object a2_parse_literal {
 	}
 
 
-	private object EmptyLine
-	private object IllegalLine
-	private type LineResult = EmptyLine.type | IllegalLine.type | Literal | PostingLiteral
+	sealed trait _ParseLineResult
+	private object EmptyLine extends _ParseLineResult
+	private object IllegalLine extends _ParseLineResult
 
-	private def parse_line(line: String, line_i: Int): LineResult = {
+	private def parse_line(line: String, line_i: Int): _ParseLineResult = {
 		trim_comments(line) match {
 			// 此处 match 顺序考虑性能
 

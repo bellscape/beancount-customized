@@ -10,7 +10,7 @@ class BeanConnection(val ctx: WsContext) {
 	def init(): Unit = {
 		val now = System.currentTimeMillis()
 		BeanDataSource.literals.update(now)
-		send_status()
+		send_beans()
 	}
 
 	def handle_msg(msg: String): Unit = {
@@ -27,10 +27,10 @@ class BeanConnection(val ctx: WsContext) {
 			return
 		}
 
-		send_status()
+		send_beans()
 	}
 
-	private def send_status(): Unit = {
+	private def send_beans(): Unit = {
 		BeanDataSource.literals.data match {
 			case Left(errs: Seq[LiteralErrBlockView]) =>
 				ctx.send(Map(

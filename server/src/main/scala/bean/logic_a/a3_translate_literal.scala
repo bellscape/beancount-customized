@@ -1,7 +1,7 @@
 package bean.logic_a
 
-import bean.entity.*
-import bean.logic_a.a2_parse_literal.*
+import bean.entity._
+import bean.logic_a.a2_parse_literal._
 import bean.logic_a.a9_render_literal_err.LiteralErr
 
 import scala.collection.mutable.ArrayBuffer

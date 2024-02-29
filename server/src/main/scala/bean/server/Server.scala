@@ -1,7 +1,6 @@
 package bean.server
 
 import io.javalin.Javalin
-import io.javalin.websocket.{WsConnectHandler, WsMessageHandler}
 import org.slf4j.LoggerFactory
 
 import java.util.concurrent.{Executors, TimeUnit}
@@ -27,7 +26,7 @@ object Server {
 	}
 	private val log = LoggerFactory.getLogger(getClass)
 
-	var conn: BeanConnection = _
+	private var conn: BeanConnection = _
 	private def init_ws_handlers(app: Javalin): Unit = {
 		app.ws("/ws", ws => {
 			ws.onConnect(ctx => {
