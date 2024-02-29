@@ -13,6 +13,7 @@ object Server {
 		init_ws_logging(app)
 		init_ws_handlers(app)
 		app.start(5002)
+
 		init_schedule()
 	}
 
@@ -26,32 +27,31 @@ object Server {
 	}
 	private val log = LoggerFactory.getLogger(getClass)
 
+	var conn: BeanConnection = _
 	private def init_ws_handlers(app: Javalin): Unit = {
 		app.ws("/ws", ws => {
 			ws.onConnect(ctx => {
-				val conn = new BeanConnection(ctx)
-				ctx.attribute(ATTR_BEAN_CONN, conn)
-				BeanController.connections += conn
+				if (conn != null)
+					conn.ctx.closeSession()
+				conn = new BeanConnection(ctx)
 				conn.init()
 			})
 			ws.onMessage(ctx => {
-				val conn = ctx.attribute(ATTR_BEAN_CONN).asInstanceOf[BeanConnection]
-				assert(conn != null, "no connection")
-				conn.handle_msg(ctx.message())
+				if (conn != null && conn.ctx.sessionId() == ctx.sessionId())
+					conn.handle_msg(ctx.message())
 			})
 			ws.onClose(ctx => {
-				val conn = ctx.attribute(ATTR_BEAN_CONN).asInstanceOf[BeanConnection]
-				assert(conn != null, "no connection")
-
-				BeanController.connections -= conn
+				if (conn != null && conn.ctx.sessionId() == ctx.sessionId())
+					conn = null
 			})
 		})
 	}
-	private val ATTR_BEAN_CONN = "bean"
 
 	private def init_schedule(): Unit = {
-		executor.scheduleWithFixedDelay(() => {BeanController.check_data()},
-			2, 2, TimeUnit.SECONDS)
+		executor.scheduleWithFixedDelay(() => {
+			if (conn != null)
+				conn.check_data()
+		}, 2, 2, TimeUnit.SECONDS)
 	}
 	private val executor = Executors.newSingleThreadScheduledExecutor()
 
