@@ -1,47 +1,45 @@
 package bean.server
 
 import bean.logic_a.a9_render_literal_err.LiteralErrBlockView
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import io.javalin.websocket.WsContext
 
 class BeanConnection(val ctx: WsContext) {
 
+	private def ws_send(`type`: String, data: Any): Unit = {
+		val msg = Map("type" -> `type`, "data" -> data)
+		ctx.send(mapper.writeValueAsString(msg))
+	}
+	private val mapper: ObjectMapper = new ObjectMapper().registerModule(DefaultScalaModule)
+
+
+	def init(): Unit = {check_data()}
+
 	private var last_literal_hash = ""
-
-	def init(): Unit = {
-		val now = System.currentTimeMillis()
-		BeanDataSource.literals.update(now)
-		send_beans()
-	}
-
-	def handle_msg(msg: String): Unit = {
-		// ctx.send(s"{handle: $msg}")
-	}
-
 	def check_data(): Unit = {
 		val now = System.currentTimeMillis()
 		BeanDataSource.literals.update(now)
 		if (BeanDataSource.literals.data_hash == last_literal_hash) {
-			ctx.send(Map(
-				"mode" -> "ping",
-			))
+			ws_send("ping", null)
 			return
 		}
+		last_literal_hash = BeanDataSource.literals.data_hash
 
-		send_beans()
-	}
 
-	private def send_beans(): Unit = {
 		BeanDataSource.literals.data match {
 			case Left(errs: Seq[LiteralErrBlockView]) =>
-				ctx.send(Map(
-					"mode" -> "literal_err",
-					"data" -> errs
-				))
-			case Right(_) =>
-				ctx.send(Map(
-					"mode" -> "home",
+				ws_send("literal_err", errs.take(10))
+			case Right(directives) =>
+				ws_send("home", Map(
+					"size" -> directives.size,
 				))
 		}
+	}
+
+
+	def handle_msg(msg: String): Unit = {
+		// ctx.send(s"{handle: $msg}")
 	}
 
 }

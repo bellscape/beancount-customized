@@ -19,7 +19,7 @@ object Server {
 	private def init_ws_logging(app: Javalin): Unit = {
 		app.wsBefore(ws => {
 			ws.onConnect(ctx => log.info(s"[ws ${ctx.queryString()}] connect"))
-			ws.onMessage(ctx => log.info(s"[ws ${ctx.queryString()}] message: ${ctx.message()}"))
+			ws.onMessage(ctx => log.info(s"[ws ${ctx.queryString()}] received: ${ctx.message()}"))
 			ws.onClose(ctx => log.info(s"[ws ${ctx.queryString()}] close"))
 			ws.onError(ctx => log.error(s"[ws ${ctx.queryString()}] error", ctx.error()))
 		})

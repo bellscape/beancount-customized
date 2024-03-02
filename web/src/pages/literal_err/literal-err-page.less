@@ -1,0 +1,43 @@
+
+.literal-err-page {
+  padding: 1rem;
+
+  .block {
+    margin: 1rem 0;
+
+    .label {}
+    .lines {
+      border: 1px solid black;
+    }
+  }
+}
+
+// line: layout
+.literal-err-page > .block > .lines > .line {
+  display: flex;
+  .line-n { width: 60px; }
+  .line-main { flex-grow: 1; }
+}
+
+// line: theme
+.literal-err-page > .block > .lines > .line.has-err {
+  background-color: #e9c1bd;
+}
+.literal-err-page > .block > .lines > .line {
+  .line-n {
+    text-align:    right;
+    padding-right: 4px;
+    font-family:   monospace;
+    color:         gray;
+  }
+  .line-main {
+    border-left:  1px solid gray;
+    padding-left: 4px;
+    .line-hint {
+      font-size:        0.8rem;
+      display:          inline-block;
+      background-color: lightyellow; border-radius: 4px; padding: 0 2px;
+    }
+    .line-text { font-family: monospace; white-space: pre; }
+  }
+}
