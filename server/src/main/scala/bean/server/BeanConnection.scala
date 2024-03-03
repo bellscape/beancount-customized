@@ -1,6 +1,7 @@
 package bean.server
 
 import bean.logic_a.a9_render_literal_err.LiteralErrBlockView
+import bean.logic_b.b4_render_balance_err.BalanceErrView
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import io.javalin.websocket.WsContext
@@ -18,23 +19,36 @@ class BeanConnection(val ctx: WsContext) {
 
 	private var last_literal_hash = ""
 	def check_data(): Unit = {
+
+		// case: ping
 		val now = System.currentTimeMillis()
-		BeanDataSource.literals.update(now)
-		if (BeanDataSource.literals.data_hash == last_literal_hash) {
+		BeanDataSource.a_literals.update(now)
+		if (BeanDataSource.a_literals.data_hash == last_literal_hash) {
 			ws_send("ping", null)
 			return
 		}
-		last_literal_hash = BeanDataSource.literals.data_hash
+		last_literal_hash = BeanDataSource.a_literals.data_hash
 
-
-		BeanDataSource.literals.data match {
-			case Left(errs: Seq[LiteralErrBlockView]) =>
-				ws_send("literal_err", errs.take(10))
-			case Right(directives) =>
-				ws_send("home", Map(
-					"size" -> directives.size,
-				))
+		// case: err.literal
+		if (BeanDataSource.a_literals.data.isLeft) {
+			val a_views: Seq[LiteralErrBlockView] = BeanDataSource.a_literals.data.left.get
+			ws_send("err.literal", a_views.take(10))
+			return
 		}
+
+		// case: err.balance
+		BeanDataSource.b_balance.update(now)
+		if (BeanDataSource.b_balance.data.isLeft) {
+			val b_view: BalanceErrView = BeanDataSource.b_balance.data.left.get
+			ws_send("err.balance", b_view)
+			return
+		}
+
+		// case: home
+		val directives = BeanDataSource.b_balance.data.getOrElse(Seq.empty)
+		ws_send("home", Map(
+			"size" -> directives.size,
+		))
 	}
 
 
