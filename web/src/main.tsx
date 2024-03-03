@@ -8,11 +8,11 @@ import './main.css'
 import './theme-light.less'
 import './theme-dark.less'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import LiteralErrPagePreview from './pages/literal_err/literal-err-page-preview.ts'
+import LiteralErrPagePreview from './pages/a9_literal_err/literal-err-page-preview.tsx'
 
 const router = createBrowserRouter([
     { path: '/', element: <HomePage /> },
-    { path: '/preview/literal-err', element: <LiteralErrPagePreview /> },
+    { path: '/preview/err-literal', element: <LiteralErrPagePreview /> },
 ])
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

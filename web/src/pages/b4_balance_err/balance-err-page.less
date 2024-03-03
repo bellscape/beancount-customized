@@ -1,0 +1,31 @@
+
+.balance-err-page {
+  .desc { margin-bottom: 2rem }
+  .table-desc { margin-bottom: 0.5rem }
+}
+
+.balance-err-page table tbody {
+  tr.is-suspicious {
+    background-color: #f8d7da;
+  }
+  tr.is-check {
+    color: darkgoldenrod;
+  }
+  td.is-mono {
+    font-family: monospace;
+  }
+
+  tr td { padding-top: 2px !important; padding-bottom: 2px !important; }
+  tr.is-first-in-date {
+    td {
+      //border-top:  1px solid #dee2e6;
+      padding-top: 8px !important;
+    }
+  }
+  tr.is-last-in-date {
+    td {
+      //border-bottom:  1px solid #dee2e6;
+      padding-bottom: 8px !important;
+    }
+  }
+}

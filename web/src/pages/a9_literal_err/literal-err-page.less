@@ -1,13 +1,13 @@
 
 .literal-err-page {
-  padding: 1rem;
-
   .block {
     margin: 1rem 0;
 
     .label {}
     .lines {
-      border: 1px solid black;
+      border:        1px solid black;
+      border-radius: 0.5rem;
+      overflow:      hidden;
     }
   }
 }
@@ -15,7 +15,7 @@
 // line: layout
 .literal-err-page > .block > .lines > .line {
   display: flex;
-  .line-n { width: 60px; }
+  .line-n { width: 60px; flex-shrink: 0; }
   .line-main { flex-grow: 1; }
 }
 
@@ -33,11 +33,11 @@
   .line-main {
     border-left:  1px solid gray;
     padding-left: 4px;
+    .line-text { font-family: monospace; white-space: pre-wrap; word-break: break-all; }
     .line-hint {
       font-size:        0.8rem;
       display:          inline-block;
-      background-color: lightyellow; border-radius: 4px; padding: 0 2px;
+      background-color: lightyellow; border-radius: 4px; padding: 0 2px; margin-bottom: 4px;
     }
-    .line-text { font-family: monospace; white-space: pre; }
   }
 }

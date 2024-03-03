@@ -1,6 +1,6 @@
 import { makeAutoObservable } from 'mobx'
 
-type PageType = 'empty' | 'literal_err' | 'home'
+type PageType = 'empty' | 'err.literal' | 'err.balance' | 'home'
 
 class HomePageModel {
     page_type: PageType = 'empty'

@@ -37,8 +37,8 @@ object b4_render_balance_err {
 	}
 
 	case class JournalEntry(
-							   balance: BigDecimal, delta_str: String,
-							   date: String, narration: String,
+							   balance: String, delta: String, date: String,
+							   comment: String, src: String,
 							   is_trx: Boolean,
 							   var is_suspicious: Boolean = false,
 							   var is_first_in_date: Boolean = false,
@@ -52,16 +52,19 @@ object b4_render_balance_err {
 		var balance = BigDecimal(0)
 		val out_buf = ArrayBuffer.empty[JournalEntry]
 
-		def check_balance(expect: BigDecimal, date: LocalDate, directive_type: String): Unit = {
+		def check_balance(expect: BigDecimal, date: LocalDate, directive_type: String, directive_src: String): Unit = {
 			val missing = expect - balance
 			val is_suspicious = missing != 0
 			if (is_suspicious) {
 				out_buf.foreach(_.is_suspicious = true)
+				out ++= out_buf
 			}
-			out ++= out_buf
 			out_buf.clear()
 
-			val entry = JournalEntry(balance, missing.str_signed, date.toString, s"<$directive_type>", is_trx = false, is_suspicious)
+			val entry = JournalEntry(
+				balance.toString(), missing.str_signed, date.toString,
+				s"<$directive_type>", directive_src,
+				is_trx = false, is_suspicious)
 			out += entry
 		}
 
@@ -72,7 +75,10 @@ object b4_render_balance_err {
 					allow_init = false
 					val delta = postings.map(_.delta.n).sum
 					balance += delta
-					val entry = JournalEntry(balance, delta.str_signed, t.date.toString, t.narration, is_trx = true)
+
+					val entry = JournalEntry(
+						balance.toString(), delta.str_signed, t.date.toString,
+						build_trx_comment(t, account, ccy), t.src.toString, is_trx = true)
 					out_buf += entry
 				}
 			case b: Balance =>
@@ -81,11 +87,11 @@ object b4_render_balance_err {
 						allow_init = false
 						balance = b.amount.n
 					}
-					check_balance(b.amount.n, b.date, "balance")
+					check_balance(b.amount.n, b.date, "balance", b.src.toString)
 				}
 			case c: AccountClose =>
 				if (c.account == account) {
-					check_balance(0, c.date, "close")
+					check_balance(0, c.date, "close", c.src.toString)
 				}
 		}
 		out ++= out_buf
@@ -99,6 +105,22 @@ object b4_render_balance_err {
 		}
 
 		out.toSeq
+	}
+	private def build_trx_comment(t: Trx, account: String, ccy: String): String = {
+		val out = new StringBuilder()
+
+		val related = t.postings.map(p => (p.account, p.delta.ccy))
+			.map { case (a, c) => (if (a == account) "" else a, if (c == ccy) "" else c) }
+			.filter { case (a, c) => a.nonEmpty || c.nonEmpty }
+			.sorted.distinct
+			.map { case (a, c) => if (a.isEmpty) c else if (c.isEmpty) a else s"$a/$c" }
+			.mkString(", ")
+		out ++= related
+
+		if (t.narration.nonEmpty)
+			out ++= s" // ${t.narration}"
+
+		out.toString()
 	}
 
 	implicit class RichBigDecimal(raw: BigDecimal) {
