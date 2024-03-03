@@ -15,7 +15,7 @@ const HomePage = observer(() => {
         return <BalanceErrPage data={home.page_data} />
     }
     if (home.page_type === 'home') {
-        return <div>Home</div>
+        return <div>OK</div>
     }
     return <div>loading...</div>
 })

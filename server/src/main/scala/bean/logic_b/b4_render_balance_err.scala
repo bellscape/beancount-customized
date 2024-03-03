@@ -88,10 +88,12 @@ object b4_render_balance_err {
 						balance = b.amount.n
 					}
 					check_balance(b.amount.n, b.date, "balance", b.src.toString)
+					balance = b.amount.n
 				}
 			case c: AccountClose =>
 				if (c.account == account) {
 					check_balance(0, c.date, "close", c.src.toString)
+					balance = 0
 				}
 		}
 		out ++= out_buf
