@@ -3,7 +3,7 @@ package bean.logic_a
 import bean.entity.{Amount, Posting, Trx}
 import bean.logic_a.a2_parse_literal.{ComplexTrxLiteral, PostingLiteral}
 
-object a3_translate_literal_ctx {
+object a3_parse_directive_trx {
 
 
 	private case class InternalPosting(account: String, var delta: Amount,
@@ -25,7 +25,7 @@ object a3_translate_literal_ctx {
 	private case class CtxError(hint: String) extends Exception
 
 
-	def translate(x: ComplexTrxLiteral): Either[String, Trx] = {
+	def parse_trx(x: ComplexTrxLiteral): Either[String, Trx] = {
 		try {
 			val ps = x.postings.toSeq.map(new InternalPosting(_))
 			if (ps.size < 2) throw CtxError("至少应有两条过账")
@@ -34,7 +34,7 @@ object a3_translate_literal_ctx {
 			fix_auto_price(ps)
 			check_trx_balance(ps)
 
-			val trx = Trx(x.date, ps.map(_.build()), x.narration)
+			val trx = Trx(x.date, ps.map(_.build()), x.narration, x.src)
 			Right(trx)
 		} catch {
 			case e: CtxError => Left(e.hint)

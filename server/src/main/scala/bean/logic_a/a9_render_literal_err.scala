@@ -1,18 +1,21 @@
 package bean.logic_a
 
+import bean.entity.Src
+
 import scala.collection.mutable.ArrayBuffer
 
 object a9_render_literal_err {
 
-
-	case class LiteralErr(from_i: Int, to_i: Int, hint: String)
-	// i: 从 0 开始
+	// n: 从 1 开始
+	case class LiteralErr(first_n: Int, last_n: Int, hint: String) {
+		def this(src: Src, hint: String) = this(src.n, src.n, hint)
+	}
 
 	case class LiteralErrLineView(n: Int, text: String, has_err: Boolean, hint: String) {
 		def this(n: Int, text: String) = this(n, text, false, "")
 		// n: 从 1 开始
 	}
-	case class LiteralErrBlockView(file: String, lines: ArrayBuffer[LiteralErrLineView] = ArrayBuffer.empty)
+	case class LiteralErrBlockView(label: String, lines: ArrayBuffer[LiteralErrLineView] = ArrayBuffer.empty)
 
 
 	private val CONTEXT_LEN = 2
@@ -24,33 +27,33 @@ object a9_render_literal_err {
 		for (err <- errs) {
 
 			// step: 判断是否与上个 err 合并
-			val should_merge = last_err.hint == err.hint && err.from_i - last_err.to_i - 1 <= MAX_GAP
+			val should_merge = last_err.hint == err.hint && err.first_n - last_err.last_n - 1 <= MAX_GAP
 			last_err = err
 
 			// step: 退回之前的过量输出
-			val ctx_from_i = if (should_merge && out.nonEmpty) {
+			val ctx_from_n = if (should_merge && out.nonEmpty) {
 				val last_block = out.last.lines
-				while (last_block.nonEmpty && last_block.last.n > err.from_i) {
+				while (last_block.nonEmpty && last_block.last.n >= err.first_n) {
 					last_block.dropRightInPlace(1)
 				}
-				last_block.last.n
+				last_block.last.n + 1
 			} else {
 				out += LiteralErrBlockView(file)
-				(err.from_i - CONTEXT_LEN).max(0)
+				(err.first_n - CONTEXT_LEN).max(1)
 			}
 
 			// step: 输出 context
-			for (i <- ctx_from_i until err.from_i) {
-				out.last.lines += new LiteralErrLineView(i + 1, lines(i))
+			for (n <- ctx_from_n until err.first_n) {
+				out.last.lines += new LiteralErrLineView(n, lines(n - 1))
 			}
 			// step: 输出 from...to
-			for (i <- err.from_i to err.to_i) {
-				val hint = if (i == err.from_i) err.hint else ""
-				out.last.lines += LiteralErrLineView(i + 1, lines(i), true, hint)
+			for (n <- err.first_n to err.last_n) {
+				val hint = if (n == err.first_n) err.hint else ""
+				out.last.lines += LiteralErrLineView(n, lines(n - 1), has_err = true, hint)
 			}
 			// step: 输出 context
-			for (i <- err.to_i + 1 until (err.to_i + CONTEXT_LEN).min(lines.length - 1)) {
-				out.last.lines += new LiteralErrLineView(i + 1, lines(i))
+			for (n <- err.last_n + 1 to (err.last_n + CONTEXT_LEN).min(lines.length)) {
+				out.last.lines += new LiteralErrLineView(n, lines(n - 1))
 			}
 		}
 		out.toSeq

@@ -6,9 +6,9 @@ import bean.logic_a.a9_render_literal_err.LiteralErr
 
 import scala.collection.mutable.ArrayBuffer
 
-object a3_translate_literal {
+object a3_parse_directive {
 
-	def translate(literals: Seq[Literal]): Either[Seq[LiteralErr], Seq[Directive]] = {
+	def parse(literals: Seq[Literal]): Either[Seq[LiteralErr], Seq[Directive]] = {
 		val out = ArrayBuffer.empty[Directive]
 		val errs = ArrayBuffer.empty[LiteralErr]
 		literals.foreach {
@@ -16,24 +16,30 @@ object a3_translate_literal {
 			case t: BalanceLiteral => out += translate_balance(t)
 			case t: CloseLiteral => out += translate_close(t)
 			case t: ComplexTrxLiteral =>
-				a3_translate_literal_ctx.translate(t) match {
-					case Left(hint) => errs += LiteralErr(t.from_i, t.to_i, hint)
+				a3_parse_directive_trx.parse_trx(t) match {
+					case Left(hint) => errs += LiteralErr(t.src.n, t.last_n, hint)
 					case Right(trx) => out += trx
 				}
 		}
 		if (errs.isEmpty) Right(out.toSeq) else Left(errs.toSeq)
 	}
-
 	private def translate_balance(x: BalanceLiteral): Balance = {
-		Balance(x.date, x.account, x.amount)
+		Balance(x.date, x.account, x.amount, x.src)
 	}
 	private def translate_close(x: CloseLiteral): AccountClose = {
-		AccountClose(x.date, x.account)
+		AccountClose(x.date, x.account, x.src)
 	}
 	private def translate_simple_trx(x: SimpleTrxLiteral): Directive = {
 		val p_from = Posting(x.from_account, -x.amount, None)
 		val p_to = Posting(x.to_account, x.amount, None)
-		Trx(x.date, Seq(p_from, p_to), x.narration)
+		Trx(x.date, Seq(p_from, p_to), x.narration, x.src)
+	}
+
+	def sort(directives: Seq[Directive]): Seq[Directive] = {
+		directives.sortBy {
+			case x: Trx => (x.date, 1)
+			case x => (x.date, 0)
+		}
 	}
 
 }

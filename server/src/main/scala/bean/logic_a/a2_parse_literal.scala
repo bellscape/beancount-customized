@@ -1,6 +1,6 @@
 package bean.logic_a
 
-import bean.entity.Amount
+import bean.entity.{Amount, Src}
 import bean.logic_a.a9_render_literal_err.LiteralErr
 import org.apache.commons.lang3.StringUtils.trimToEmpty
 
@@ -12,31 +12,32 @@ object a2_parse_literal {
 
 	trait Literal extends _ParseLineResult
 
-	case class BalanceLiteral(date: LocalDate, account: String, amount: Amount) extends Literal
-	case class CloseLiteral(date: LocalDate, account: String) extends Literal
+	case class BalanceLiteral(date: LocalDate, account: String, amount: Amount, src: Src) extends Literal
+	case class CloseLiteral(date: LocalDate, account: String, src: Src) extends Literal
 	case class SimpleTrxLiteral(date: LocalDate, from_account: String, to_account: String,
-								amount: Amount, narration: String) extends Literal
+								amount: Amount, narration: String, src: Src) extends Literal
 	case class ComplexTrxLiteral(date: LocalDate, narration: String,
-								 postings: ArrayBuffer[PostingLiteral] = ArrayBuffer.empty,
-								 from_i: Int, var to_i: Int) extends Literal
+								 src: Src, var last_n: Int,
+								 postings: ArrayBuffer[PostingLiteral] = ArrayBuffer.empty) extends Literal
 	case class PostingLiteral(account: String, delta: Option[Amount], has_price: Boolean, price: Option[Amount]) extends _ParseLineResult
 
 
-	def parse(lines: Array[String]): Either[Seq[LiteralErr], Seq[Literal]] = {
+	def parse(file: String, lines: Array[String]): Either[Seq[LiteralErr], Seq[Literal]] = {
 		val out = ArrayBuffer.empty[Literal]
 		val errs = ArrayBuffer.empty[LiteralErr]
-		for ((line, line_i) <- lines.zipWithIndex) {
-			parse_line(line, line_i) match {
+		for ((line, i) <- lines.zipWithIndex) {
+			val src = Src(file, i + 1)
+			parse_line(line, src) match {
 				case EmptyLine =>
 				case IllegalLine =>
-					errs += LiteralErr(line_i, line_i, "本行格式不对")
+					errs += new LiteralErr(src, "本行格式不对")
 				case p: PostingLiteral =>
 					out.lastOption match {
 						case Some(t: ComplexTrxLiteral) =>
 							t.postings += p
-							t.to_i = line_i
+							t.last_n = src.n
 						case _ =>
-							errs += LiteralErr(line_i, line_i, "过账应紧随交易")
+							errs += new LiteralErr(src, "过账应紧随交易")
 					}
 				case l: Literal =>
 					out += l
@@ -50,7 +51,7 @@ object a2_parse_literal {
 	private object EmptyLine extends _ParseLineResult
 	private object IllegalLine extends _ParseLineResult
 
-	private def parse_line(line: String, line_i: Int): _ParseLineResult = {
+	private def parse_line(line: String, src: Src): _ParseLineResult = {
 		trim_comments(line) match {
 			// 此处 match 顺序考虑性能
 
@@ -60,18 +61,17 @@ object a2_parse_literal {
 				SimpleTrxLiteral(LocalDate.parse(date),
 					from_account, to_account,
 					Amount(BigDecimal(amount), ccy),
-					trimToEmpty(narration))
+					trimToEmpty(narration), src)
 
 			case BALANCE_LINE(date, account, amount, ccy) =>
 				BalanceLiteral(LocalDate.parse(date), account,
-					Amount(BigDecimal(amount), ccy))
+					Amount(BigDecimal(amount), ccy), src)
 			case CLOSE_LINE(date, account) =>
-				CloseLiteral(LocalDate.parse(date), account)
+				CloseLiteral(LocalDate.parse(date), account, src)
 
 			case TRX_HEADER_LINE(date, _, narration) =>
 				ComplexTrxLiteral(LocalDate.parse(date),
-					trimToEmpty(narration),
-					from_i = line_i, to_i = line_i)
+					trimToEmpty(narration), src, src.n)
 
 			case POSTING_LINE__NO_AMOUNT(account) =>
 				PostingLiteral(account, delta = None,
