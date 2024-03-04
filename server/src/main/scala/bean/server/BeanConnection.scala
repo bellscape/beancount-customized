@@ -14,7 +14,7 @@ class BeanConnection(val ctx: WsContext) {
 		val msg = mapper.writeValueAsString(Map("type" -> `type`, "data" -> data))
 		ctx.send(msg)
 		if (`type` != "ping")
-			log.info(s"[ws] send: $msg")
+			log.info(s"[ws] send: ${msg.take(100)}")
 	}
 	private val mapper: ObjectMapper = new ObjectMapper().registerModule(DefaultScalaModule)
 

@@ -8,8 +8,10 @@ import bean.server.data.{LiteralData, ReactiveData}
 
 object BeanDataSource {
 
+	val root = s"${System.getProperty("user.home")}/Documents/bean/data"
+
 	private type A_Result = Either[Seq[LiteralErrBlockView], Seq[Directive]]
-	val a_literals: ReactiveData[A_Result] = LiteralData
+	val a_literals: ReactiveData[A_Result] = new LiteralData(root)
 
 	private type B_Result = Either[BalanceErrView, Seq[Directive]]
 	val b_balance: ReactiveData[B_Result] = ReactiveData.map[A_Result, B_Result](a_literals, {

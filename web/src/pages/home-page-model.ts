@@ -1,4 +1,4 @@
-import { makeAutoObservable } from 'mobx'
+import { makeAutoObservable, observable } from 'mobx'
 
 type PageType = 'empty' | 'err.literal' | 'err.balance' | 'home'
 
@@ -8,12 +8,12 @@ class HomePageModel {
     socket: WebSocket
 
     constructor() {
-        makeAutoObservable(this)
+        makeAutoObservable(this, { page_data: observable.ref })
         this.socket = new WebSocket(`ws://${location.host}/ws`)
         this.socket.onmessage = this.on_msg.bind(this)
-        this.socket.onopen = () => { console.log('connected') }
-        this.socket.onclose = () => { console.log('disconnected') }
-        this.socket.onerror = (error) => { console.error('error', error) }
+        this.socket.onopen = () => { console.log('ws connected') }
+        this.socket.onclose = () => { console.log('ws disconnected') }
+        // this.socket.onerror = (error) => { console.error('error', error) }
         setInterval(() => {
             this.socket.send(JSON.stringify({ type: 'ping' }))
         }, 5000)

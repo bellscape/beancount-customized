@@ -1,7 +1,8 @@
 import { observer } from 'mobx-react-lite'
-import './balance-err-page.less'
-import { Table } from 'antd'
+import { useState } from 'react'
+import { Checkbox, Table } from 'antd'
 import { ColumnProps } from 'antd/es/table'
+import './balance-err-page.less'
 
 
 type BalanceErrData = {
@@ -42,15 +43,17 @@ interface Props {
     data: BalanceErrData
 }
 const BalanceErrPage = observer(({ data }: Props) => {
+    const [reversed, setReversed] = useState(false)
     return <div className="balance-err-page">
         <h1>Balance Error</h1>
         <div className="desc">{data.desc}</div>
         <div className="table-desc">{data.journal_account}/{data.journal_ccy}</div>
+        <div><Checkbox checked={reversed} onChange={e => setReversed(e.target.checked)}>reversed</Checkbox></div>
         <Table
             columns={antd_columns}
             rowKey="src"
             rowClassName={row_cls}
-            dataSource={data.journals}
+            dataSource={reversed ? data.journals.slice().reverse() : data.journals}
             size="small"
             pagination={false}
         />
