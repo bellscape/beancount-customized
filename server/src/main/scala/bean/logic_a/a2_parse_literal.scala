@@ -22,7 +22,7 @@ object a2_parse_literal {
 	case class PostingLiteral(account: String, delta: Option[Amount], has_price: Boolean, price: Option[Amount]) extends _ParseLineResult
 
 
-	def parse(file: String, lines: Array[String]): Either[Seq[LiteralErr], Seq[Literal]] = {
+	def parse(file: String, lines: Array[String]): (Seq[Literal], Seq[LiteralErr]) = {
 		val out = ArrayBuffer.empty[Literal]
 		val errs = ArrayBuffer.empty[LiteralErr]
 		for ((line, i) <- lines.zipWithIndex) {
@@ -43,7 +43,7 @@ object a2_parse_literal {
 					out += l
 			}
 		}
-		if (errs.isEmpty) Right(out.toSeq) else Left(errs.toSeq)
+		(out.toSeq, errs.toSeq)
 	}
 
 

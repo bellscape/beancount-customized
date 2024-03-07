@@ -8,7 +8,7 @@ import scala.collection.mutable.ArrayBuffer
 
 object a3_parse_directive {
 
-	def parse(literals: Seq[Literal]): Either[Seq[LiteralErr], Seq[Directive]] = {
+	def parse(literals: Seq[Literal]): (Seq[Directive], Seq[LiteralErr]) = {
 		val out = ArrayBuffer.empty[Directive]
 		val errs = ArrayBuffer.empty[LiteralErr]
 		literals.foreach {
@@ -21,7 +21,7 @@ object a3_parse_directive {
 					case Right(trx) => out += trx
 				}
 		}
-		if (errs.isEmpty) Right(out.toSeq) else Left(errs.toSeq)
+		(out.toSeq, errs.toSeq)
 	}
 	private def translate_balance(x: BalanceLiteral): Balance = {
 		Balance(x.date, x.account, x.amount, x.src)

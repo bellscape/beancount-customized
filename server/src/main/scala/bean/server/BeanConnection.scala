@@ -5,6 +5,7 @@ import bean.logic_b.b4_render_balance_err.BalanceErrView
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 import io.javalin.websocket.WsContext
+import org.apache.commons.lang3.time.FastDateFormat
 import org.slf4j.LoggerFactory
 
 class BeanConnection(val ctx: WsContext) {
@@ -34,8 +35,8 @@ class BeanConnection(val ctx: WsContext) {
 		last_literal_hash = BeanDataSource.a_literals.data_hash
 
 		// case: err.literal
-		if (BeanDataSource.a_literals.data.isLeft) {
-			val a_views: Seq[LiteralErrBlockView] = BeanDataSource.a_literals.data.left.get
+		if (BeanDataSource.a_literals.data.errors.nonEmpty) {
+			val a_views: Seq[LiteralErrBlockView] = BeanDataSource.a_literals.data.errors
 			ws_send("err.literal", a_views.take(10))
 			return
 		}
@@ -49,12 +50,14 @@ class BeanConnection(val ctx: WsContext) {
 		}
 
 		// case: home
+		val time = BeanDataSource.a_literals.data.last_modified
 		val directives = BeanDataSource.b_balance.data.getOrElse(Seq.empty)
 		ws_send("home", Map(
+			"time" -> format.format(time),
 			"size" -> directives.size,
 		))
 	}
-
+	private val format = FastDateFormat.getInstance("M-d HH:mm:ss")
 
 	def handle_msg(msg: String): Unit = {
 		// ctx.send(s"{handle: $msg}")
