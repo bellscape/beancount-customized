@@ -3,13 +3,13 @@ package offline
 import bean.entity.{Accounts, Posting, Trx}
 import bean.server.BeanDataSource
 
-import java.io.{File, PrintWriter}
+import java.io.PrintWriter
 
 object ExportFavaCompatible {
 
 	def main(args: Array[String]): Unit = {
 		val trx_seq = get_trx_seq()
-		val out_file = new File(BeanDataSource.root).getParentFile + "/fava.bean"
+		val out_file = BeanDataSource.root + "/fava.bean"
 		val out = new PrintWriter(out_file)
 
 		fiat_ccy_seq = guess_fiat_ccy(trx_seq)

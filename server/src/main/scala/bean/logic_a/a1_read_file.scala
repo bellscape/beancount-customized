@@ -2,8 +2,6 @@ package bean.logic_a
 
 import java.io.File
 import scala.collection.mutable.ArrayBuffer
-import scala.io.Source
-import scala.util.Using
 
 object a1_read_file {
 
@@ -29,9 +27,5 @@ object a1_read_file {
 		}
 	}
 
-
-	def read_file(file: File): Array[String] = {
-		Using(Source.fromFile(file)) {_.getLines().toArray}.get
-	}
 
 }

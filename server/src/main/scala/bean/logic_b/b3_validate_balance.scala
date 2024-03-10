@@ -40,9 +40,9 @@ object b3_validate_balance {
 	}
 
 	private val zero = BigDecimal(0)
-	private class BalanceCache {
+	class BalanceCache {
 		// account -> ccy -> balance
-		private val account_map: mutable.Map[String, mutable.Map[String, BigDecimal]] = mutable.LinkedHashMap.empty
+		val account_map: mutable.Map[String, mutable.Map[String, BigDecimal]] = mutable.LinkedHashMap.empty
 
 		def add_amount(account: String, ccy: String, n: BigDecimal): Unit = {
 			val ccy_map = account_map.getOrElseUpdate(account, mutable.HashMap.empty)

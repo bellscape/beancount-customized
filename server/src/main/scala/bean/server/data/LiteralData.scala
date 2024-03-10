@@ -5,6 +5,7 @@ import bean.logic_a.a9_render_literal_err.LiteralErrBlockView
 import bean.logic_a.{a1_read_file, a2_parse_literal, a3_parse_directive, a9_render_literal_err}
 import org.apache.commons.lang3.builder.HashCodeBuilder
 import org.slf4j.LoggerFactory
+import util.FileUtil
 
 import java.io.File
 import scala.collection.mutable
@@ -26,7 +27,7 @@ final class LiteralData(root: String) extends ReactiveData[LiteralDataEntry] {
 			val latest_hash = file_modified.toString
 			if (data_hash == latest_hash) return
 
-			val lines = a1_read_file.read_file(file)
+			val lines = FileUtil.read_lines(file)
 			val (a2_out, a2_err) = a2_parse_literal.parse(name, lines)
 			val (a3_out, a3_err) = a3_parse_directive.parse(a2_out)
 			val first_err = if (a2_err.nonEmpty) a2_err else a3_err
