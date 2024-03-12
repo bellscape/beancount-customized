@@ -112,7 +112,9 @@ object c1_price_db__yahoo {
 
 	def main(args: Array[String]): Unit = {
 		// prepare_price("BTC-USD", "2015-01-01")
+		// prepare_price("ETH-USD", "2015-01-01")
 		// prepare_price("CNY=X", "2018-01-01")
+		// prepare_price("TWD=X", "2018-01-01")
 		// prepare_price("GBPCNY=X", "2018-01-01")
 		// prepare_price("HKDCNY=X", "2018-01-01")
 	}

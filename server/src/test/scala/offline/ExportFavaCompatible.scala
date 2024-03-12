@@ -19,7 +19,7 @@ object ExportFavaCompatible {
 		println(s"Exported to $out_file")
 	}
 
-	private def get_trx_seq(): Seq[Trx] = {
+	def get_trx_seq(): Seq[Trx] = {
 		val now = System.currentTimeMillis()
 		BeanDataSource.a_literals.update(now)
 		assert(BeanDataSource.a_literals.data.errors.isEmpty, "has literal errors")

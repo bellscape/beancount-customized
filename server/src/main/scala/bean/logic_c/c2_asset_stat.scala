@@ -1,6 +1,6 @@
 package bean.logic_c
 
-import bean.entity.{Accounts, Directive, Trx}
+import bean.entity.{Directive, Trx}
 import bean.logic_b.b3_validate_balance.BalanceCache
 
 import java.time.LocalDate
@@ -19,18 +19,14 @@ object c2_asset_stat {
 		}
 
 		val balances = new BalanceCache()
-		trx_seq.flatMap(_.postings)
-			.filter(p => Accounts.is_assets(p.account))
-			.foreach(p => balances.add_amount(p.account, p.delta.ccy, p.delta.n))
+		trx_seq.foreach(balances.add_trx)
 
 		val price = c1_price_db.build_price(LocalDate.now(), trx_seq)
 
-		val assets = balances.account_map.flatMap { case (account, ccy_map) =>
-				ccy_map.map { case (ccy, n) =>
-					AssetBalance(account, ccy, n, n.toDouble * price(ccy))
-				}
+		val assets = balances.all_balance().map { case (account, ccy, n) =>
+				AssetBalance(account, ccy, n, n.toDouble * price(ccy))
 			}
-			.filterNot(_.cost == 0).toSeq
+			.filterNot(_.cost == 0)
 			.sortBy(-_.cost)
 
 		val total_cost = assets.map(_.cost).sum

@@ -15,10 +15,7 @@ object b3_validate_balance {
 		val cache = new BalanceCache()
 		val out = ArrayBuffer.empty[BalanceErr]
 		input.foreach {
-			case t: Trx =>
-				t.postings
-					.filter(Accounts.is_assets)
-					.foreach(p => cache.add_amount(p.account, p.delta.ccy, p.delta.n))
+			case t: Trx => cache.add_trx(t)
 			case b: Balance =>
 				cache.get_opt(b.account, b.amount.ccy) match {
 					case Some(current) =>
@@ -42,9 +39,9 @@ object b3_validate_balance {
 	private val zero = BigDecimal(0)
 	class BalanceCache {
 		// account -> ccy -> balance
-		val account_map: mutable.Map[String, mutable.Map[String, BigDecimal]] = mutable.LinkedHashMap.empty
+		private val account_map: mutable.Map[String, mutable.Map[String, BigDecimal]] = mutable.LinkedHashMap.empty
 
-		def add_amount(account: String, ccy: String, n: BigDecimal): Unit = {
+		private def add_amount(account: String, ccy: String, n: BigDecimal): Unit = {
 			val ccy_map = account_map.getOrElseUpdate(account, mutable.HashMap.empty)
 			ccy_map.put(ccy, ccy_map.getOrElse(ccy, zero) + n)
 		}
@@ -57,6 +54,19 @@ object b3_validate_balance {
 		}
 		def list_all_ccy(account: String): Seq[(String, BigDecimal)] = {
 			account_map.get(account).map(_.toSeq).getOrElse(Seq.empty)
+		}
+
+		def add_trx(t: Trx): Unit = {
+			t.postings
+				.filter(Accounts.is_assets)
+				.foreach(p => add_amount(p.account, p.delta.ccy, p.delta.n))
+		}
+		def all_balance(): Seq[(String, String, BigDecimal)] = {
+			account_map.flatMap { case (account, ccy_map) =>
+					ccy_map.map { case (ccy, n) => (account, ccy, n) }
+				}
+				.filter(_._3 != zero)
+				.toSeq
 		}
 	}
 
