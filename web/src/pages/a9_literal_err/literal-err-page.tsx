@@ -2,17 +2,6 @@ import classNames from 'classnames'
 import { observer } from 'mobx-react-lite'
 import './literal-err-page.less'
 
-type LiteralErrLine = {
-    n: number
-    text: string
-    has_err: boolean
-    hint: string
-}
-type LiteralErrBlock = {
-    label: string
-    lines: LiteralErrLine[]
-}
-
 interface Props {
     blocks: LiteralErrBlock[]
 }

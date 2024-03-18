@@ -21,7 +21,7 @@ object BeanDataSource {
 		} else Right(Seq.empty)
 	})
 
-	val c_assets: ReactiveData[Seq[AssetBalance]] = ReactiveData.map[LiteralDataEntry, Seq[AssetBalance]](a_literals, { a_entry =>
+	val c2_assets: ReactiveData[Seq[AssetBalance]] = ReactiveData.map[LiteralDataEntry, Seq[AssetBalance]](a_literals, { a_entry =>
 		c2_asset_stat.stat(a_entry.directives)
 	})
 

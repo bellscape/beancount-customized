@@ -5,25 +5,6 @@ import { ColumnProps } from 'antd/es/table'
 import './balance-err-page.less'
 
 
-type BalanceErrData = {
-    desc: string
-    journal_account: string
-    journal_ccy: string
-    journals: JournalEntry[]
-}
-// {"balance":"4.55","delta":"+4.55","date":"2023-12-21","narration":"利息","is_trx":true,"is_suspicious":true,"is_first_in_date":true,"is_last_in_date":true}
-type JournalEntry = {
-    balance: string
-    delta: string
-    date: string
-    comment: string
-    src: string
-    is_trx: boolean
-    is_suspicious: boolean
-    is_first_in_date: boolean
-    is_last_in_date: boolean
-}
-
 const antd_columns: ColumnProps<JournalEntry>[] = [
     { title: 'Balance', dataIndex: 'balance', className: 'is-mono', align: 'right' },
     { title: 'Delta', dataIndex: 'delta', className: 'is-mono' },

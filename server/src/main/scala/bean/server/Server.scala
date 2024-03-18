@@ -52,7 +52,7 @@ object Server {
 	private def init_schedule(): Unit = {
 		executor.scheduleWithFixedDelay(() => {
 			if (conn != null)
-				conn.check_data()
+				conn.refresh_data()
 		}, 2, 2, TimeUnit.SECONDS)
 	}
 	private val executor = Executors.newSingleThreadScheduledExecutor()

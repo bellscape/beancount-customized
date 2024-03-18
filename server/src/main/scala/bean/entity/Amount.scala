@@ -1,7 +1,7 @@
 package bean.entity
 
 case class Amount(n: BigDecimal, ccy: String) {
-	override def toString: String = s"$n $ccy"
+	override def toString: String = s"${n.bigDecimal.stripTrailingZeros().toPlainString} $ccy"
 
 	def unary_- : Amount = Amount(-n, ccy)
 	def *(m: BigDecimal): Amount = Amount(n * m, ccy)

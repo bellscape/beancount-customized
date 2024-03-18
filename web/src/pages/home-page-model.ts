@@ -1,6 +1,6 @@
 import { makeAutoObservable, observable } from 'mobx'
 
-type PageType = 'empty' | 'err.literal' | 'err.balance' | 'home'
+type PageType = 'empty' | 'err-literal' | 'err-balance' | 'c2_assets'
 
 class HomePageModel {
     page_type: PageType = 'empty'
@@ -21,10 +21,10 @@ class HomePageModel {
 
     on_msg(event: MessageEvent<string>) {
         const msg = JSON.parse(event.data)
-        if (msg.type === 'ping') return
+        if (msg.page === '') return
 
         console.log('ws msg', event.data)
-        this.page_type = msg.type
+        this.page_type = msg.page
         this.page_data = msg.data
     }
 
